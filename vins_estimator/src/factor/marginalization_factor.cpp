@@ -244,8 +244,8 @@ void MarginalizationInfo::marginalize()
 
 
     TicToc t_thread_summing;
-    pthread_t tids[NUM_THREADS];
-    ThreadsStruct threadsstruct[NUM_THREADS];
+    std::vector<std::thread> threads(NUM_THREADS);
+    std::vector<ThreadsStruct> threadsstruct(NUM_THREADS);
     int i = 0;
     for (auto it : factors)
     {
@@ -260,16 +260,15 @@ void MarginalizationInfo::marginalize()
         threadsstruct[i].b = Eigen::VectorXd::Zero(pos);
         threadsstruct[i].parameter_block_size = parameter_block_size;
         threadsstruct[i].parameter_block_idx = parameter_block_idx;
-        int ret = pthread_create( &tids[i], NULL, ThreadsConstructA ,(void*)&(threadsstruct[i]));
-        if (ret != 0)
-        {
-            ROS_WARN("pthread_create error");
-            ROS_BREAK();
-        }
+        threads[i] = std::thread([data= (void*)&(threadsstruct[i])]() {
+            ThreadsConstructA(data);
+        });
     }
     for( int i = NUM_THREADS - 1; i >= 0; i--)  
     {
-        pthread_join( tids[i], NULL ); 
+        if (threads[i].joinable()) {
+            threads[i].join();
+        }
         A += threadsstruct[i].A;
         b += threadsstruct[i].b;
     }

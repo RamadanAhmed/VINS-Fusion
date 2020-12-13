@@ -14,7 +14,6 @@
 #include <cstdio>
 #include <iostream>
 #include <queue>
-#include <execinfo.h>
 #include <csignal>
 #include <opencv2/opencv.hpp>
 #include <eigen3/Eigen/Dense>

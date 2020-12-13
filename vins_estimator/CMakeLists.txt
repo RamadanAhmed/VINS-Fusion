@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(vins)
 
-set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS "-std=c++11")
-#-DEIGEN_USE_MKL_ALL")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
-
 find_package(catkin REQUIRED COMPONENTS
     roscpp
     std_msgs
@@ -18,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(OpenCV REQUIRED)
 
-# message(WARNING "OpenCV_VERSION: ${OpenCV_VERSION}")
+message(WARNING "OpenCV_VERSION: ${OpenCV_VERSION}")
 
 find_package(Ceres REQUIRED)
 
@@ -50,15 +45,18 @@ add_library(vins_lib
     src/initial/initial_sfm.cpp
     src/initial/initial_ex_rotation.cpp
     src/featureTracker/feature_tracker.cpp)
-target_link_libraries(vins_lib ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})
 
+target_link_libraries(vins_lib ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})
+target_compile_features(vins_lib PRIVATE cxx_std_17)
 
 add_executable(vins_node src/rosNodeTest.cpp)
 target_link_libraries(vins_node vins_lib) 
+target_compile_features(vins_node PRIVATE cxx_std_17)
 
 add_executable(kitti_odom_test src/KITTIOdomTest.cpp)
 target_link_libraries(kitti_odom_test vins_lib) 
-
+target_compile_features(kitti_odom_test PRIVATE cxx_std_17)
 add_executable(kitti_gps_test src/KITTIGPSTest.cpp)
 target_link_libraries(kitti_gps_test vins_lib) 
+target_compile_features(kitti_gps_test PRIVATE cxx_std_17)
 

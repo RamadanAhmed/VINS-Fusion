@@ -340,7 +340,7 @@ int PoseGraph::detectLoop(KeyFrame* keyframe, int frame_index)
     {
         int feature_num = keyframe->keypoints.size();
         cv::resize(keyframe->image, compressed_image, cv::Size(376, 240));
-        putText(compressed_image, "feature_num:" + to_string(feature_num), cv::Point2f(10, 10), CV_FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255));
+        putText(compressed_image, "feature_num:" + to_string(feature_num), cv::Point2f(10, 10), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255));
         image_pool[frame_index] = compressed_image;
     }
     TicToc tmp_t;
@@ -361,7 +361,7 @@ int PoseGraph::detectLoop(KeyFrame* keyframe, int frame_index)
     {
         loop_result = compressed_image.clone();
         if (ret.size() > 0)
-            putText(loop_result, "neighbour score:" + to_string(ret[0].Score), cv::Point2f(10, 50), CV_FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255));
+            putText(loop_result, "neighbour score:" + to_string(ret[0].Score), cv::Point2f(10, 50), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255));
     }
     // visual loop result 
     if (DEBUG_IMAGE)
@@ -371,7 +371,7 @@ int PoseGraph::detectLoop(KeyFrame* keyframe, int frame_index)
             int tmp_index = ret[i].Id;
             auto it = image_pool.find(tmp_index);
             cv::Mat tmp_image = (it->second).clone();
-            putText(tmp_image, "index:  " + to_string(tmp_index) + "loop score:" + to_string(ret[i].Score), cv::Point2f(10, 50), CV_FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255));
+            putText(tmp_image, "index:  " + to_string(tmp_index) + "loop score:" + to_string(ret[i].Score), cv::Point2f(10, 50), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255));
             cv::hconcat(loop_result, tmp_image, loop_result);
         }
     }
@@ -388,7 +388,7 @@ int PoseGraph::detectLoop(KeyFrame* keyframe, int frame_index)
                 {
                     auto it = image_pool.find(tmp_index);
                     cv::Mat tmp_image = (it->second).clone();
-                    putText(tmp_image, "loop score:" + to_string(ret[i].Score), cv::Point2f(10, 50), CV_FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255));
+                    putText(tmp_image, "loop score:" + to_string(ret[i].Score), cv::Point2f(10, 50), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255));
                     cv::hconcat(loop_result, tmp_image, loop_result);
                 }
             }
@@ -424,7 +424,7 @@ void PoseGraph::addKeyFrameIntoVoc(KeyFrame* keyframe)
     {
         int feature_num = keyframe->keypoints.size();
         cv::resize(keyframe->image, compressed_image, cv::Size(376, 240));
-        putText(compressed_image, "feature_num:" + to_string(feature_num), cv::Point2f(10, 10), CV_FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255));
+        putText(compressed_image, "feature_num:" + to_string(feature_num), cv::Point2f(10, 10), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255));
         image_pool[keyframe->index] = compressed_image;
     }
 
@@ -455,10 +455,17 @@ void PoseGraph::optimize4DoF()
             int max_length = cur_index + 1;
 
             // w^t_i   w^q_i
-            double t_array[max_length][3];
-            Quaterniond q_array[max_length];
-            double euler_array[max_length][3];
-            double sequence_array[max_length];
+            //double t_array[max_length][3];
+            std::vector<std::array<double, 3>> t_array(max_length);
+
+            //Quaterniond q_array[max_length];
+            std::vector< Quaterniond> q_array(max_length);
+
+            //double euler_array[max_length][3];
+            std::vector<std::array<double, 3>> euler_array(max_length);
+            //double sequence_array[max_length];
+            std::vector <double> sequence_array(max_length);
+
 
             ceres::Problem problem;
             ceres::Solver::Options options;
@@ -498,13 +505,13 @@ void PoseGraph::optimize4DoF()
 
                 sequence_array[i] = (*it)->sequence;
 
-                problem.AddParameterBlock(euler_array[i], 1, angle_local_parameterization);
-                problem.AddParameterBlock(t_array[i], 3);
+                problem.AddParameterBlock(euler_array[i].data(), 1, angle_local_parameterization);
+                problem.AddParameterBlock(t_array[i].data(), 3);
 
                 if ((*it)->index == first_looped_index || (*it)->sequence == 0)
                 {   
-                    problem.SetParameterBlockConstant(euler_array[i]);
-                    problem.SetParameterBlockConstant(t_array[i]);
+                    problem.SetParameterBlockConstant(euler_array[i].data());
+                    problem.SetParameterBlockConstant(t_array[i].data());
                 }
 
                 //add edge
@@ -518,10 +525,10 @@ void PoseGraph::optimize4DoF()
                     double relative_yaw = euler_array[i][0] - euler_array[i-j][0];
                     ceres::CostFunction* cost_function = FourDOFError::Create( relative_t.x(), relative_t.y(), relative_t.z(),
                                                    relative_yaw, euler_conncected.y(), euler_conncected.z());
-                    problem.AddResidualBlock(cost_function, NULL, euler_array[i-j], 
-                                            t_array[i-j], 
-                                            euler_array[i], 
-                                            t_array[i]);
+                    problem.AddResidualBlock(cost_function, NULL, euler_array[i-j].data(),
+                                            t_array[i-j].data(),
+                                            euler_array[i].data(),
+                                            t_array[i].data());
                   }
                 }
 
@@ -537,10 +544,10 @@ void PoseGraph::optimize4DoF()
                     double relative_yaw = (*it)->getLoopRelativeYaw();
                     ceres::CostFunction* cost_function = FourDOFWeightError::Create( relative_t.x(), relative_t.y(), relative_t.z(),
                                                                                relative_yaw, euler_conncected.y(), euler_conncected.z());
-                    problem.AddResidualBlock(cost_function, loss_function, euler_array[connected_index], 
-                                                                  t_array[connected_index], 
-                                                                  euler_array[i], 
-                                                                  t_array[i]);
+                    problem.AddResidualBlock(cost_function, loss_function, euler_array[connected_index].data(),
+                                                                  t_array[connected_index].data(),
+                                                                  euler_array[i].data(),
+                                                                  t_array[i].data());
                     
                 }
                 
@@ -635,9 +642,14 @@ void PoseGraph::optimize6DoF()
             int max_length = cur_index + 1;
 
             // w^t_i   w^q_i
-            double t_array[max_length][3];
+            /*double t_array[max_length][3];
             double q_array[max_length][4];
-            double sequence_array[max_length];
+            double sequence_array[max_length];*/
+
+            std::vector<std::array<double, 3>> t_array(max_length);
+            std::vector<std::array<double, 4>> q_array(max_length);
+
+            std::vector<double> sequence_array(max_length);
 
             ceres::Problem problem;
             ceres::Solver::Options options;
@@ -674,13 +686,13 @@ void PoseGraph::optimize6DoF()
 
                 sequence_array[i] = (*it)->sequence;
 
-                problem.AddParameterBlock(q_array[i], 4, local_parameterization);
-                problem.AddParameterBlock(t_array[i], 3);
+                problem.AddParameterBlock(q_array[i].data(), 4, local_parameterization);
+                problem.AddParameterBlock(t_array[i].data(), 3);
 
                 if ((*it)->index == first_looped_index || (*it)->sequence == 0)
                 {   
-                    problem.SetParameterBlockConstant(q_array[i]);
-                    problem.SetParameterBlockConstant(t_array[i]);
+                    problem.SetParameterBlockConstant(q_array[i].data());
+                    problem.SetParameterBlockConstant(t_array[i].data());
                 }
 
                 //add edge
@@ -696,7 +708,7 @@ void PoseGraph::optimize6DoF()
                         ceres::CostFunction* vo_function = RelativeRTError::Create(relative_t.x(), relative_t.y(), relative_t.z(),
                                                                                 relative_q.w(), relative_q.x(), relative_q.y(), relative_q.z(),
                                                                                 0.1, 0.01);
-                        problem.AddResidualBlock(vo_function, NULL, q_array[i-j], t_array[i-j], q_array[i], t_array[i]);
+                        problem.AddResidualBlock(vo_function, NULL, q_array[i-j].data(), t_array[i-j].data(), q_array[i].data(), t_array[i].data());
                     }
                 }
 
@@ -713,7 +725,7 @@ void PoseGraph::optimize6DoF()
                     ceres::CostFunction* loop_function = RelativeRTError::Create(relative_t.x(), relative_t.y(), relative_t.z(),
                                                                                 relative_q.w(), relative_q.x(), relative_q.y(), relative_q.z(),
                                                                                 0.1, 0.01);
-                    problem.AddResidualBlock(loop_function, loss_function, q_array[connected_index], t_array[connected_index], q_array[i], t_array[i]);                    
+                    problem.AddResidualBlock(loop_function, loss_function, q_array[connected_index].data(), t_array[connected_index].data(), q_array[i].data(), t_array[i].data());
                 }
                 
                 if ((*it)->index == cur_index)

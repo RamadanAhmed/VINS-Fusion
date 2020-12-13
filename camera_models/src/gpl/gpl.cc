@@ -151,6 +151,9 @@ unsigned long long timeInMicroseconds(void)
 	 struct timespec tp;
 #ifdef __APPLE__
      tp = orwl_gettime();
+#elif _WIN32
+	 #define CLOCK_REALTIME 0
+	 clock_gettime(CLOCK_REALTIME, &tp);
 #else
 	 clock_gettime(CLOCK_REALTIME, &tp);
 #endif

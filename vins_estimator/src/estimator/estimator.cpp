@@ -609,8 +609,10 @@ bool Estimator::initialStructure()
         }
     }
     // global sfm
-    Quaterniond Q[frame_count + 1];
-    Vector3d T[frame_count + 1];
+    std::vector<Quaterniond> Q(frame_count + 1);
+    std::vector<Vector3d> T(frame_count + 1);
+    /*Quaterniond Q[frame_count + 1];
+    Vector3d T[frame_count + 1];*/
     map<int, Vector3d> sfm_tracked_points;
     vector<SFMFeature> sfm_f;
     for (auto &it_per_id : f_manager.feature)
@@ -636,7 +638,7 @@ bool Estimator::initialStructure()
         return false;
     }
     GlobalSFM sfm;
-    if(!sfm.construct(frame_count + 1, Q, T, l,
+    if(!sfm.construct(frame_count + 1, Q.data(), T.data(), l,
               relative_R, relative_T,
               sfm_f, sfm_tracked_points))
     {

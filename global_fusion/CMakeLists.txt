@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(global_fusion)
 
-set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS "-std=c++11")
-#-DEIGEN_USE_MKL_ALL")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
-
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
@@ -31,3 +26,4 @@ add_executable(global_fusion_node
 	src/globalOpt.cpp)
 
 target_link_libraries(global_fusion_node ${catkin_LIBRARIES} ${CERES_LIBRARIES} libGeographiccc) 
+target_compile_features(global_fusion_node PRIVATE cxx_std_17)

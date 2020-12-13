@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(camera_models)
 
-set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS "-std=c++11")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -fPIC")
-
 find_package(catkin REQUIRED COMPONENTS
     roscpp
     std_msgs
@@ -64,5 +60,9 @@ add_library(camera_models
     src/gpl/gpl.cc
     src/gpl/EigenQuaternionParameterization.cc)
 
-target_link_libraries(Calibrations ${Boost_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})
-target_link_libraries(camera_models ${Boost_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})
+target_link_libraries(Calibrations PUBLIC ${Boost_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})
+target_link_libraries(camera_models PUBLIC ${Boost_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})
+target_compile_options(Calibrations PRIVATE /bigobj)
+target_compile_options(camera_models PRIVATE /bigobj)
+target_compile_features(Calibrations PRIVATE cxx_std_17)
+target_compile_features(camera_models PRIVATE cxx_std_17)

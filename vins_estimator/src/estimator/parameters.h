@@ -25,44 +25,44 @@ const int WINDOW_SIZE = 10;
 const int NUM_OF_F = 1000;
 //#define UNIT_SPHERE_ERROR
 
-extern double INIT_DEPTH;
-extern double MIN_PARALLAX;
-extern int ESTIMATE_EXTRINSIC;
+extern __declspec( dllimport ) double INIT_DEPTH;
+extern __declspec( dllimport ) double MIN_PARALLAX;
+extern __declspec( dllimport ) int ESTIMATE_EXTRINSIC;
 
-extern double ACC_N, ACC_W;
-extern double GYR_N, GYR_W;
+extern __declspec( dllimport ) double ACC_N, ACC_W;
+extern __declspec( dllimport ) double GYR_N, GYR_W;
 
-extern std::vector<Eigen::Matrix3d> RIC;
-extern std::vector<Eigen::Vector3d> TIC;
-extern Eigen::Vector3d G;
+extern __declspec( dllimport ) std::vector<Eigen::Matrix3d> RIC;
+extern __declspec( dllimport ) std::vector<Eigen::Vector3d> TIC;
+extern __declspec( dllimport ) Eigen::Vector3d G;
 
-extern double BIAS_ACC_THRESHOLD;
-extern double BIAS_GYR_THRESHOLD;
-extern double SOLVER_TIME;
-extern int NUM_ITERATIONS;
-extern std::string EX_CALIB_RESULT_PATH;
-extern std::string VINS_RESULT_PATH;
-extern std::string OUTPUT_FOLDER;
-extern std::string IMU_TOPIC;
-extern double TD;
-extern int ESTIMATE_TD;
-extern int ROLLING_SHUTTER;
-extern int ROW, COL;
-extern int NUM_OF_CAM;
-extern int STEREO;
-extern int USE_IMU;
-extern int MULTIPLE_THREAD;
-// pts_gt for debug purpose;
-extern map<int, Eigen::Vector3d> pts_gt;
+extern __declspec( dllimport )double BIAS_ACC_THRESHOLD;
+extern __declspec( dllimport )double BIAS_GYR_THRESHOLD;
+extern __declspec( dllimport )double SOLVER_TIME;
+extern __declspec( dllimport )int NUM_ITERATIONS;
+extern __declspec( dllimport )std::string EX_CALIB_RESULT_PATH;
+extern __declspec( dllimport )std::string VINS_RESULT_PATH;
+extern __declspec( dllimport )std::string OUTPUT_FOLDER;
+extern __declspec( dllimport )std::string IMU_TOPIC;
+extern __declspec( dllimport )double TD;
+extern __declspec( dllimport )int ESTIMATE_TD;
+extern __declspec( dllimport )int ROLLING_SHUTTER;
+extern __declspec( dllimport )int ROW, COL;
+extern __declspec( dllimport )int NUM_OF_CAM;
+extern __declspec( dllimport )int STEREO;
+extern __declspec( dllimport )int USE_IMU;
+extern __declspec( dllimport )int MULTIPLE_THREAD;
+// pts___declspec( dllimport )gt for debug purpose;
+extern __declspec( dllimport )map<int, Eigen::Vector3d> pts_gt;
 
-extern std::string IMAGE0_TOPIC, IMAGE1_TOPIC;
-extern std::string FISHEYE_MASK;
-extern std::vector<std::string> CAM_NAMES;
-extern int MAX_CNT;
-extern int MIN_DIST;
-extern double F_THRESHOLD;
-extern int SHOW_TRACK;
-extern int FLOW_BACK;
+extern __declspec( dllimport )std::string IMAGE0_TOPIC, IMAGE1_TOPIC;
+extern __declspec( dllimport )std::string FISHEYE_MASK;
+extern __declspec( dllimport )std::vector<std::string> CAM_NAMES;
+extern __declspec( dllimport )int MAX_CNT;
+extern __declspec( dllimport )int MIN_DIST;
+extern __declspec( dllimport )double F_THRESHOLD;
+extern __declspec( dllimport )int SHOW_TRACK;
+extern __declspec( dllimport )int FLOW_BACK;
 
 void readParameters(std::string config_file);
 

@@ -81,7 +81,6 @@ void GlobalOptimization::inputGPS(double t, double latitude, double longitude, d
 	double xyz[3];
 	GPS2XYZ(latitude, longitude, altitude, xyz);
 	vector<double> tmp{xyz[0], xyz[1], xyz[2], posAccuracy};
-    //printf("new gps: t: %f x: %f y: %f z:%f \n", t, tmp[0], tmp[1], tmp[2]);
 	GPSPositionMap[t] = tmp;
     newGPS = true;
 
@@ -112,8 +111,17 @@ void GlobalOptimization::optimize()
             mPoseMap.lock();
             int length = localPoseMap.size();
             // w^t_i   w^q_i
-            double t_array[length][3];
-            double q_array[length][4];
+			double** t_array = new double*[length];
+			double** q_array = new double*[length];
+			for (int i = 0; i < length; i++)
+			{
+				t_array[i] = new double[3];
+				q_array[i] = new double[4];
+			}						
+
+            //double t_array[length][3];
+            //double q_array[length][4];
+
             map<double, vector<double>>::iterator iter;
             iter = globalPoseMap.begin();
             for (int i = 0; i < length; i++, iter++)
@@ -155,34 +163,6 @@ void GlobalOptimization::optimize()
                                                                                 iQj.w(), iQj.x(), iQj.y(), iQj.z(),
                                                                                 0.1, 0.01);
                     problem.AddResidualBlock(vio_function, NULL, q_array[i], t_array[i], q_array[i+1], t_array[i+1]);
-
-                    /*
-                    double **para = new double *[4];
-                    para[0] = q_array[i];
-                    para[1] = t_array[i];
-                    para[3] = q_array[i+1];
-                    para[4] = t_array[i+1];
-
-                    double *tmp_r = new double[6];
-                    double **jaco = new double *[4];
-                    jaco[0] = new double[6 * 4];
-                    jaco[1] = new double[6 * 3];
-                    jaco[2] = new double[6 * 4];
-                    jaco[3] = new double[6 * 3];
-                    vio_function->Evaluate(para, tmp_r, jaco);
-
-                    std::cout << Eigen::Map<Eigen::Matrix<double, 6, 1>>(tmp_r).transpose() << std::endl
-                        << std::endl;
-                    std::cout << Eigen::Map<Eigen::Matrix<double, 6, 4, Eigen::RowMajor>>(jaco[0]) << std::endl
-                        << std::endl;
-                    std::cout << Eigen::Map<Eigen::Matrix<double, 6, 3, Eigen::RowMajor>>(jaco[1]) << std::endl
-                        << std::endl;
-                    std::cout << Eigen::Map<Eigen::Matrix<double, 6, 4, Eigen::RowMajor>>(jaco[2]) << std::endl
-                        << std::endl;
-                    std::cout << Eigen::Map<Eigen::Matrix<double, 6, 3, Eigen::RowMajor>>(jaco[3]) << std::endl
-                        << std::endl;
-                    */
-
                 }
                 //gps factor
                 double t = iterVIO->first;
@@ -194,20 +174,6 @@ void GlobalOptimization::optimize()
                     //printf("inverse weight %f \n", iterGPS->second[3]);
                     problem.AddResidualBlock(gps_function, loss_function, t_array[i]);
 
-                    /*
-                    double **para = new double *[1];
-                    para[0] = t_array[i];
-
-                    double *tmp_r = new double[3];
-                    double **jaco = new double *[1];
-                    jaco[0] = new double[3 * 3];
-                    gps_function->Evaluate(para, tmp_r, jaco);
-
-                    std::cout << Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_r).transpose() << std::endl
-                        << std::endl;
-                    std::cout << Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(jaco[0]) << std::endl
-                        << std::endl;
-                    */
                 }
 
             }
@@ -240,6 +206,14 @@ void GlobalOptimization::optimize()
             updateGlobalPath();
             //printf("global time %f \n", globalOptimizationTime.toc());
             mPoseMap.unlock();
+
+			for (int i = 0; i < length; i++)
+			{
+				delete[] t_array[i];
+				delete[] q_array[i];
+			}
+			delete[] t_array;
+			delete[] q_array;
         }
         std::chrono::milliseconds dura(2000);
         std::this_thread::sleep_for(dura);

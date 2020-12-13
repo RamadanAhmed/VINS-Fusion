@@ -8,6 +8,8 @@
  *******************************************************/
 
 #include "parameters.h"
+#include <string>
+#include <filesystem>
 
 double INIT_DEPTH;
 double MIN_PARALLAX;
@@ -150,8 +152,8 @@ void readParameters(std::string config_file)
 
 
     int pn = config_file.find_last_of('/');
-    std::string configPath = config_file.substr(0, pn);
-    
+    std::string configPath = std::filesystem::path(config_file).parent_path().string();
+    std::cout << configPath << std::endl;
     std::string cam0Calib;
     fsSettings["cam0_calib"] >> cam0Calib;
     std::string cam0Path = configPath + "/" + cam0Calib;

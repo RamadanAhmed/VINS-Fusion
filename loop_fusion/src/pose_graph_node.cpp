@@ -8,7 +8,7 @@
  *
  * Author: Qin Tong (qintonguav@gmail.com)
  *******************************************************/
-
+#include <filesystem>
 #include <vector>
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
@@ -442,7 +442,8 @@ int main(int argc, char **argv)
     cout << "BRIEF_PATTERN_FILE" << BRIEF_PATTERN_FILE << endl;
 
     int pn = config_file.find_last_of('/');
-    std::string configPath = config_file.substr(0, pn);
+    std::string configPath = std::filesystem::path(config_file).parent_path().string();
+    std::cout << configPath << std::endl;
     std::string cam0Calib;
     fsSettings["cam0_calib"] >> cam0Calib;
     std::string cam0Path = configPath + "/" + cam0Calib;
